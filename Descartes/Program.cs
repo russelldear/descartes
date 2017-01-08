@@ -10,7 +10,9 @@ namespace ConsoleApplication
         {
             Console.WriteLine("Start.");
 
-            //TestEchoMessage();
+            Environment.SetEnvironmentVariable("fb_token", "fake_token");
+
+            TestEchoMessage();
 
             TestGifMessage();
 

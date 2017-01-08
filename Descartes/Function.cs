@@ -126,7 +126,12 @@ namespace Descartes
 
                 var accessToken = Environment.GetEnvironmentVariable("fb_token");
 
-                var url = "https://graph.facebook.com/v2.6/me/messages?access_token=";
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    throw new Exception("You need to set the access token for the Messenger API in the environment variables.");
+                }
+
+                var url = "https://graph.facebook.com/v2.6/me/messages?access_token=" + accessToken;
 
                 try
                 {
@@ -143,8 +148,7 @@ namespace Descartes
                 catch (Exception ex)
                 {
                     Console.WriteLine("Message send failed: " + ex.Message);
-                }
- 
+                } 
             } 
         }
     }
