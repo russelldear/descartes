@@ -43,13 +43,12 @@ namespace Descartes
 
                         foreach (var service in responseObject["Services"])
                         {
-                            if (service.Value<string>("Direction") != "Inbound")
+                            if (service.Value<string>("Direction") != "Inbound" || service.Value<string>("ServiceID") == "WRL")
                             {
                                 continue;
                             }
 
                             destination = service.Value<string>("DestinationStopName");
-
                             minutes = service.Value<int>("DisplayDepartureSeconds") / 60;
                             seconds = service.Value<int>("DisplayDepartureSeconds") % 60;
                             break;
