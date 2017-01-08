@@ -19,6 +19,11 @@ namespace Descartes
                     text = "AVA";
                 }
                 
+                if (text.Length > 4)
+                {
+                    text = text.Substring(0, 4);
+                }
+
                 var encodedString = System.Uri.EscapeUriString(text).ToUpper();
 
                 url = String.Format("{0}{1}", url, encodedString);
