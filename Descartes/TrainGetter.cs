@@ -54,7 +54,7 @@ namespace Descartes
                             break;
                         }
 
-                        return string.Format("Next departure from {0} heading to {1} in {2} minutes and {3} seconds.", stop, destination, minutes, seconds);
+                        return string.Format("Next departure from {0} heading to {1} leaves in {2} minutes and {3} seconds.", stop, destination, minutes, seconds);
                     }
                     else
                     {
