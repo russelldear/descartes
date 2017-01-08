@@ -2,7 +2,12 @@
   "version": "1.0.0-*",
   "buildOptions": {
     "debugType": "portable",
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "compile": {
+      "includeFiles": [
+        "DataContracts.cs"
+      ]
+    }
   },
   "dependencies": {
     "Microsoft.NETCore.App": {
@@ -18,6 +23,7 @@
       "type" :"build",
       "version":"1.0.4-preview1"
     }
+
   },
   "frameworks": {
     "netcoreapp1.0": {

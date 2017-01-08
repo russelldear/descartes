@@ -1,7 +1,9 @@
 using Amazon.Lambda.Core;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using Descartes.DataContracts;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializerAttribute(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
@@ -14,83 +16,110 @@ namespace Descartes
         {
             LambdaLogger.Log(JsonConvert.SerializeObject(input));
     
-            if (/*input.bodyjson["object"] == "page"*/ true)
+            foreach(var entry in input.bodyjson.entry)
             {
-                foreach(var entry in input.bodyjson.entry)
+                var pageID = entry.id;
+                var timeOfEvent = entry.time;
+    
+                foreach(var messageEvent in entry.messaging)
                 {
-                    var pageID = entry.id;
-                    var timeOfEvent = entry.time;
-        
-                    foreach(var messageEvent in entry.messaging)
+                    if (messageEvent.message != null) 
                     {
-                        if (messageEvent.message != null) 
-                        {
-                            LambdaLogger.Log(JsonConvert.SerializeObject(messageEvent.message));
-                            ReceivedMessage(messageEvent);
-                        } 
-                        else 
-                        {
-                            LambdaLogger.Log("Webhook received unknown event: " + JsonConvert.SerializeObject(messageEvent));
-                        }
+                        LambdaLogger.Log(JsonConvert.SerializeObject(messageEvent.message));
+                        ReceivedMessage(messageEvent);
+                    } 
+                    else 
+                    {
+                        LambdaLogger.Log("Webhook received unknown event: " + JsonConvert.SerializeObject(messageEvent));
                     }
-            }
-                Console.WriteLine("Yup.");
-            }
-            else 
-            {
-                Console.WriteLine("Nup.");
-            }
+                }
+            }   
+
+            Console.WriteLine("End of message handler.");
                     
             return "End.";
         }
 
-        private void ReceivedMessage(dynamic messageEvent)
+        private void ReceivedMessage(Messaging messageEvent)
+        {
+            var senderID = messageEvent.sender.id;
+            var recipientID = messageEvent.recipient.id;
+            var timeOfMessage = messageEvent.timestamp;
+            var message = messageEvent.message;
+
+            Console.WriteLine("Received message for user {1} from user {0} at {2} with message:", senderID, recipientID, timeOfMessage);
+            Console.WriteLine(JsonConvert.SerializeObject(message));
+
+            var messageId = message.mid;
+            var messageText = message.text;
+            var messageAttachments = message.attachments;
+
+            if (!string.IsNullOrEmpty(messageText)) {
+
+                // If we receive a text message, check to see if it matches a keyword
+                // and send back the example. Otherwise, just echo the text we received.
+                switch (messageText) {
+                case "generic":
+                    sendGenericMessage(senderID);
+                    break;
+
+                default:
+                    sendTextMessage(senderID, messageText);
+                    break;
+                }
+            } else if (!string.IsNullOrEmpty(messageAttachments)) {
+                sendTextMessage(senderID, "Message with attachment received");
+            }
+        }
+
+        private void sendGenericMessage(string recipientId)
         {
 
         }
-    }
 
-    public class Message
-    {
-        public string mid { get; set; }
-        public string text { get; set; }
-    }
+        private void sendTextMessage(string recipientId, string messageText)
+        {
+            var message = new OutboundMessaging
+            {
+                recipient = new Participant
+                {
+                    id = recipientId
+                },
+                message = new OutboundMessage
+                {
+                    text = messageText
+                }
+            };
 
-    public class Messaging
-    {
-        public Message message { get; set; }
-    }
+            callSendAPI(message).Wait();
+        }
 
-    public class Entry
-    {
-        public string id { get; set; }
-        public string time { get; set; }
-        public Messaging[] messaging { get; set; }
-    }
+        private static async Task callSendAPI(OutboundMessaging message)
+        {
+            using (var client = new HttpClient())
+            {
+                var content = new StringContent(JsonConvert.SerializeObject(message), System.Text.Encoding.UTF8, "application/json");
 
-    public class Bodyjson
-    {
-        //public string object { get; set; }
-        public Entry[] entry { get; set; }
-    }
+                var url = "https://graph.facebook.com/v2.6/me/messages?access_token=";
 
-    public class Path
-    {
-    }
+                try
+                {
+                    var response = await client.PostAsync(url, content);
 
-    public class Querystring
-    {
-    }
+                    Console.WriteLine("Status: " + response.StatusCode);
 
-    public class Params
-    {
-        public Path path { get; set; }
-        public Querystring querystring { get; set; }
-    }
-
-    public class RequestBody
-    {
-        public Bodyjson bodyjson { get; set; }
-        //public Params params { get; set; }
+                    if (response.Content != null)
+                    {
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(responseString);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Message send failed: " + ex.Message);
+                }
+ 
+            } 
+        }
     }
 }

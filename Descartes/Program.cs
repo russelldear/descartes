@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using Descartes;
+using Descartes.DataContracts;
 
 namespace ConsoleApplication
 {
@@ -24,7 +24,14 @@ namespace ConsoleApplication
                                     {
                                         ""mid"": ""message id"",
                                         ""text"": ""this is text""
-                                    }
+                                    },
+                                    ""sender"": {
+                                        ""id"": ""sender id""
+                                    },
+                                    ""recipient"": {
+                                        ""id"": ""recipient id""
+                                    },
+                                    ""timestamp"": ""message timestamp""
                                 }
                             ]
                         }
