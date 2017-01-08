@@ -64,6 +64,10 @@ namespace Descartes
                 {
                     sendGifMessage(senderID, messageText).Wait();
                 }
+                else if (messageText.ToLower().StartsWith("train"))
+                {
+                    sendTrainMessage(senderID, messageText).Wait();
+                }
                 else
                 {
                     sendTextMessage(senderID, messageText);
@@ -95,6 +99,27 @@ namespace Descartes
                 message = new OutboundMessage
                 {
                     text = gifUrl
+                }
+            };
+
+            MessageSender.Send(message).Wait();
+        }
+
+        private static async Task sendTrainMessage(string recipientId, string messageText)
+        {
+            string stop = messageText.Substring(5).Trim();
+
+            string nextDeparture = await TrainGetter.Get(stop);
+
+            var message = new OutboundMessaging
+            {
+                recipient = new Participant
+                {
+                    id = recipientId
+                },
+                message = new OutboundMessage
+                {
+                    text = nextDeparture
                 }
             };
 
