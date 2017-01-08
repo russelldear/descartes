@@ -56,18 +56,21 @@ namespace Descartes
 
             if (!string.IsNullOrEmpty(messageText)) {
 
-                // If we receive a text message, check to see if it matches a keyword
-                // and send back the example. Otherwise, just echo the text we received.
-                switch (messageText) {
-                case "generic":
+                if (messageText == "generic")
+                {
                     sendGenericMessage(senderID);
-                    break;
-
-                default:
-                    sendTextMessage(senderID, messageText);
-                    break;
                 }
-            } else if (!string.IsNullOrEmpty(messageAttachments)) {
+                else if (messageText.ToLower().StartsWith("gif"))
+                {
+                    sendGifMessage(senderID, messageText).Wait();
+                }
+                else
+                {
+                    sendTextMessage(senderID, messageText);
+                }
+            } 
+            else if (!string.IsNullOrEmpty(messageAttachments)) 
+            {
                 sendTextMessage(senderID, "Message with attachment received");
             }
         }
@@ -75,6 +78,27 @@ namespace Descartes
         private void sendGenericMessage(string recipientId)
         {
 
+        }
+
+        private static async Task sendGifMessage(string recipientId, string messageText)
+        {
+            string tagString = messageText.Substring(3).Trim();
+
+            string gifUrl = await GifGetter.New(tagString);
+
+            var message = new OutboundMessaging
+            {
+                recipient = new Participant
+                {
+                    id = recipientId
+                },
+                message = new OutboundMessage
+                {
+                    text = gifUrl
+                }
+            };
+
+            callSendAPI(message).Wait();
         }
 
         private void sendTextMessage(string recipientId, string messageText)
@@ -99,6 +123,8 @@ namespace Descartes
             using (var client = new HttpClient())
             {
                 var content = new StringContent(JsonConvert.SerializeObject(message), System.Text.Encoding.UTF8, "application/json");
+
+                var accessToken = Environment.GetEnvironmentVariable("fb_token");
 
                 var url = "https://graph.facebook.com/v2.6/me/messages?access_token=";
 

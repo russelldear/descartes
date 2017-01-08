@@ -10,6 +10,15 @@ namespace ConsoleApplication
         {
             Console.WriteLine("Start.");
 
+            //TestEchoMessage();
+
+            TestGifMessage();
+
+            Console.WriteLine("End.");
+        }
+
+        private static void TestEchoMessage()
+        {
             var testJson = @"
             { ""bodyjson"": { 
                     ""object"": ""page"", 
@@ -49,8 +58,49 @@ namespace ConsoleApplication
 
                 Console.WriteLine(new Descartes.Function().FunctionHandler(requestBody, null));
             }
+        }
 
-            Console.WriteLine("End.");
+        private static void TestGifMessage()
+        {
+            var testJson = @"
+            { ""bodyjson"": { 
+                    ""object"": ""page"", 
+                    ""entry"": [
+                        {
+                            ""id"": ""this is an id"",
+                            ""time"": ""this is a time"",
+                            ""messaging"":
+                            [
+                                {
+                                    ""message"":
+                                    {
+                                        ""mid"": ""message id"",
+                                        ""text"": ""gif yoda""
+                                    },
+                                    ""sender"": {
+                                        ""id"": ""sender id""
+                                    },
+                                    ""recipient"": {
+                                        ""id"": ""recipient id""
+                                    },
+                                    ""timestamp"": ""message timestamp""
+                                }
+                            ]
+                        }
+                    ]
+                }, 
+                ""params"": { 
+                    ""path"": {}, 
+                    ""querystring"": {} 
+                } 
+            }";
+
+            using (Stream s = GenerateStreamFromString(testJson))
+            {
+                var requestBody = new Amazon.Lambda.Serialization.Json.JsonSerializer().Deserialize<RequestBody>(s);
+
+                Console.WriteLine(new Descartes.Function().FunctionHandler(requestBody, null));
+            }
         }
 
         public static Stream GenerateStreamFromString(string s)
