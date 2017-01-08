@@ -34,10 +34,12 @@ namespace Descartes
                         var responseString = await response.Content.ReadAsStringAsync();
                         Console.WriteLine(responseString);
 
+                        JObject responseObject = JObject.Parse(responseString);
+
+                        var stop = responseObject["Stop"].Value<string>("Name");
+                        var destination = string.Empty;
                         var minutes = -1;
                         var seconds = -1;
-
-                        JObject responseObject = JObject.Parse(responseString);
 
                         foreach (var service in responseObject["Services"])
                         {
@@ -46,12 +48,14 @@ namespace Descartes
                                 continue;
                             }
 
+                            destination = service.Value<string>("DestinationStopName");
+
                             minutes = service.Value<int>("DisplayDepartureSeconds") / 60;
                             seconds = service.Value<int>("DisplayDepartureSeconds") % 60;
                             break;
                         }
 
-                        return "Next departure in " + minutes + " minutes and " + seconds + " seconds.";
+                        return string.Format("Next departure from {0} heading to {1} in {2} minutes and {3} seconds.", stop, destination, minutes, seconds);
                     }
                     else
                     {
