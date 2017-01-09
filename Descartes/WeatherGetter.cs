@@ -52,11 +52,11 @@ namespace Descartes
                         var todayMax = today.Value<string>("max");
                         var todayMin = today.Value<string>("min");
 
-                        var tomorrowForecast = today.Value<string>("forecast");
-                        var tomorrowMax = today.Value<string>("max");
-                        var tomorrowMin = today.Value<string>("min");
+                        var tomorrowForecast = tomorrow.Value<string>("forecast");
+                        var tomorrowMax = tomorrow.Value<string>("max");
+                        var tomorrowMin = tomorrow.Value<string>("min");
                         
-                        return string.Format("Today: {0} - Max {1}°C - Min {2}°C. \r\nTomorrow: {3} - Max {4}°C - Min {5}°C.", 
+                        return string.Format("Today: {0} Max {1}°C - Min {2}°C. \r\nTomorrow: {3} Max {4}°C - Min {5}°C.", 
                                                 todayForecast, todayMax, todayMin,
                                                 tomorrowForecast, tomorrowMax, tomorrowMin);
                     }
