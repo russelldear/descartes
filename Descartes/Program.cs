@@ -15,6 +15,7 @@ namespace ConsoleApplication
             TestEchoMessage();
             TestGifMessage();
             TestTrainMessage();
+            TestWeatherMessage();
 
             Console.WriteLine("End.");
         }
@@ -121,6 +122,49 @@ namespace ConsoleApplication
                                     {
                                         ""mid"": ""message id"",
                                         ""text"": ""train AVA""
+                                    },
+                                    ""sender"": {
+                                        ""id"": ""sender id""
+                                    },
+                                    ""recipient"": {
+                                        ""id"": ""recipient id""
+                                    },
+                                    ""timestamp"": ""message timestamp""
+                                }
+                            ]
+                        }
+                    ]
+                }, 
+                ""params"": { 
+                    ""path"": {}, 
+                    ""querystring"": {} 
+                } 
+            }";
+
+            using (Stream s = GenerateStreamFromString(testJson))
+            {
+                var requestBody = new Amazon.Lambda.Serialization.Json.JsonSerializer().Deserialize<RequestBody>(s);
+
+                Console.WriteLine(new Descartes.Function().FunctionHandler(requestBody, null));
+            }
+        }
+
+        private static void TestWeatherMessage()
+        {
+            var testJson = @"
+            { ""bodyjson"": { 
+                    ""object"": ""page"", 
+                    ""entry"": [
+                        {
+                            ""id"": ""this is an id"",
+                            ""time"": ""this is a time"",
+                            ""messaging"":
+                            [
+                                {
+                                    ""message"":
+                                    {
+                                        ""mid"": ""message id"",
+                                        ""text"": ""weather""
                                     },
                                     ""sender"": {
                                         ""id"": ""sender id""
