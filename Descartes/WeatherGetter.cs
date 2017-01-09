@@ -44,6 +44,8 @@ namespace Descartes
                                 default:
                                     break;
                             }
+
+                            i++;
                         }
 
                         var todayForecast = today.Value<string>("forecast");
