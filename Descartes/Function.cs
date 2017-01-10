@@ -70,7 +70,7 @@ namespace Descartes
                 }
                 else if (messageText == "I think")
                 {
-                    sendThereforeMessage(senderID, messageText).Wait();
+                    sendThereforeMessage(senderID, messageText);
                 }
                 else
                 {
