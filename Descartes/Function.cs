@@ -2,7 +2,6 @@ using Amazon.Lambda.Core;
 using Newtonsoft.Json;
 using System;
 using Descartes.DataContracts;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
