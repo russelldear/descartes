@@ -56,11 +56,7 @@ namespace Descartes
 
             if (!string.IsNullOrEmpty(messageText)) {
 
-                if (messageText == "generic")
-                {
-                    sendGenericMessage(senderID);
-                }
-                else if (messageText.ToLower().StartsWith("gif"))
+                if (messageText.ToLower().StartsWith("gif"))
                 {
                     sendGifMessage(senderID, messageText).Wait();
                 }
@@ -74,18 +70,13 @@ namespace Descartes
                 }
                 else
                 {
-                    sendTextMessage(senderID, messageText);
+                    sendDefaultMessage(senderID, messageText);
                 }
             } 
             else if (!string.IsNullOrEmpty(messageAttachments)) 
             {
-                sendTextMessage(senderID, "Message with attachment received");
+                sendDefaultMessage(senderID, "Message with attachment received");
             }
-        }
-
-        private void sendGenericMessage(string recipientId)
-        {
-
         }
 
         private static async Task sendGifMessage(string recipientId, string messageText)
@@ -151,8 +142,10 @@ namespace Descartes
             MessageSender.Send(message).Wait();
         }
 
-        private void sendTextMessage(string recipientId, string messageText)
+        private void sendDefaultMessage(string recipientId, string messageText)
         {
+            var response = @"Hi there - you can ask me what the weather will be like in Wellington by typing 'weather', or find the next departing train from your station by typing 'train' followed by the name of the station - e.g. 'train Silverstream'.";
+
             var message = new OutboundMessaging
             {
                 recipient = new Participant
@@ -161,7 +154,7 @@ namespace Descartes
                 },
                 message = new OutboundMessage
                 {
-                    text = messageText
+                    text = response
                 }
             };
 
