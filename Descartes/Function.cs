@@ -68,6 +68,10 @@ namespace Descartes
                 {
                     sendWeatherMessage(senderID, messageText).Wait();
                 }
+                else if (messageText == "I think")
+                {
+                    sendThereforeMessage(senderID, messageText).Wait();
+                }
                 else
                 {
                     sendDefaultMessage(senderID, messageText);
@@ -136,6 +140,23 @@ namespace Descartes
                 message = new OutboundMessage
                 {
                     text = weather
+                }
+            };
+
+            MessageSender.Send(message).Wait();
+        }
+
+        private static void sendThereforeMessage(string recipientId, string messageText)
+        {
+            var message = new OutboundMessaging
+            {
+                recipient = new Participant
+                {
+                    id = recipientId
+                },
+                message = new OutboundMessage
+                {
+                    text = "...therefore I am."
                 }
             };
 
