@@ -63,6 +63,10 @@ namespace Descartes
                 {
                     sendTrainMessage(senderID, messageText).Wait();
                 }
+                else if (messageText.ToLower().StartsWith("bus"))
+                {
+                    sendTrainMessage(senderID, messageText).Wait();
+                }
                 else if (messageText.ToLower().StartsWith("weather"))
                 {
                     sendWeatherMessage(senderID, messageText).Wait();
@@ -108,6 +112,27 @@ namespace Descartes
             string stop = messageText.Substring(5).Trim();
 
             string nextDeparture = await TrainGetter.Get(stop);
+
+            var message = new OutboundMessaging
+            {
+                recipient = new Participant
+                {
+                    id = recipientId
+                },
+                message = new OutboundMessage
+                {
+                    text = nextDeparture
+                }
+            };
+
+            MessageSender.Send(message).Wait();
+        }
+
+        private static async Task sendBusMessage(string recipientId, string messageText)
+        {
+            string stop = messageText.Substring(3).Trim();
+
+            string nextDeparture = await BusGetter.Get(stop);
 
             var message = new OutboundMessaging
             {
