@@ -41,7 +41,7 @@ namespace Descartes
                         var minutes = -1;
                         var seconds = -1;
 
-                        var responseText = new StringBuilder(string.Format("Next five buses from {0}: \n\r", stop));
+                        var responseText = new StringBuilder(string.Format("Next five buses from {0}: \n", stop));
 
                         var i = 0;
 
@@ -57,7 +57,7 @@ namespace Descartes
                             minutes = service.Value<int>("DisplayDepartureSeconds") / 60;
                             seconds = service.Value<int>("DisplayDepartureSeconds") % 60;
 
-                            responseText.Append(string.Format("Route {0} to {1}: {2} mins {3} seconds\n\r", route, destination, minutes, seconds));
+                            responseText.Append(string.Format("Route {0} to {1}: {2} mins {3} seconds\n", route, destination, minutes, seconds));
 
                             i++;
                         }
