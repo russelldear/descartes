@@ -65,7 +65,7 @@ namespace Descartes
                 }
                 else if (messageText.ToLower().StartsWith("bus"))
                 {
-                    sendTrainMessage(senderID, messageText).Wait();
+                    sendBusMessage(senderID, messageText).Wait();
                 }
                 else if (messageText.ToLower().StartsWith("weather"))
                 {
