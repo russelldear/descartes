@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -8,26 +9,14 @@ namespace Descartes
 {
     public class TrainGetter
     {
+        private const string departureFormat = "Next departure from {0} heading to {1} leaves in {2} minutes and {3} seconds.\n";
+
         public static async Task<string> Get(string text = "AVA")
         {
             using (var client = new HttpClient())
             {
-                var url = "https://www.metlink.org.nz/api/v1/StopDepartures/";
+                var url = GetUrl(text);
 
-                if (String.IsNullOrEmpty(text))
-                {
-                    text = "AVA";
-                }
-                
-                if (text.Length > 4)
-                {
-                    text = text.Substring(0, 4);
-                }
-
-                var encodedString = System.Uri.EscapeUriString(text).ToUpper();
-
-                url = String.Format("{0}{1}", url, encodedString);
-                
                 try
                 {
                     var response = await client.GetAsync(url);
@@ -36,30 +25,19 @@ namespace Descartes
 
                     if (response.StatusCode == HttpStatusCode.OK && response.Content != null)
                     {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine(responseString);
+                        var metlinkResponse = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(metlinkResponse);
 
-                        JObject responseObject = JObject.Parse(responseString);
+                        JObject responseObject = JObject.Parse(metlinkResponse);
 
-                        var stop = responseObject["Stop"].Value<string>("Name");
-                        var destination = string.Empty;
-                        var minutes = -1;
-                        var seconds = -1;
-
-                        foreach (var service in responseObject["Services"])
+                        if (url.EndsWith("WELL"))
                         {
-                            if (service.Value<string>("Direction") != "Inbound" || service.Value<string>("ServiceID") == "WRL")
-                            {
-                                continue;
-                            }
-
-                            destination = service.Value<string>("DestinationStopName");
-                            minutes = service.Value<int>("DisplayDepartureSeconds") / 60;
-                            seconds = service.Value<int>("DisplayDepartureSeconds") % 60;
-                            break;
+                            return GetWellingtonResponse(responseObject);
                         }
-
-                        return string.Format("Next departure from {0} heading to {1} leaves in {2} minutes and {3} seconds.", stop, destination, minutes, seconds);
+                        else
+                        {
+                            return GetExternalStationResponse(responseObject);
+                        }
                     }
                     else
                     {
@@ -75,5 +53,111 @@ namespace Descartes
 
             return string.Empty;
         }
+
+        private static string GetUrl(string text)
+        {
+            var url = "https://www.metlink.org.nz/api/v1/StopDepartures/";
+
+            if (String.IsNullOrEmpty(text))
+            {
+                text = "AVA";
+            }
+
+            if (text.Length > 4)
+            {
+                text = text.Substring(0, 4);
+            }
+
+            var encodedString = System.Uri.EscapeUriString(text).ToUpper();
+
+            return String.Format("{0}{1}", url, encodedString);
+        }
+
+        private static string GetWellingtonResponse(JObject responseObject)
+        {
+            var stop = responseObject["Stop"].Value<string>("Name");
+
+            var lines = new List<string>{ "HVL", "KPL", "JVL", "MEL" };
+
+            var responseString = string.Empty;
+
+            foreach(var line in lines)
+            {
+                var departure = GetWellingtonDeparture(line, responseObject["Services"]);
+
+                if (departure != null)
+                {
+                    responseString += string.Format(departureFormat, stop, departure.Destination, departure.Minutes, departure.Seconds);
+                }
+                else
+                {
+                    responseString += string.Format("No {0} departures listed.\n", line);
+                }
+            }
+
+            return responseString;
+        }
+
+        private static Departure GetWellingtonDeparture(string line, IEnumerable<JToken> services)
+        {
+            foreach (var service in services)
+            {
+                if (service.Value<string>("ServiceID") != line)
+                {
+                    continue;
+                }
+
+                return new Departure
+                {
+                    Direction = "Outbound",
+                    Destination = service.Value<string>("DestinationStopName"),
+                    Minutes = service.Value<int>("DisplayDepartureSeconds") / 60,
+                    Seconds = service.Value<int>("DisplayDepartureSeconds") % 60
+                };
+            }
+
+            return null;
+        }
+
+        private static string GetExternalStationResponse(JObject responseObject)
+        {
+            var stop = responseObject["Stop"].Value<string>("Name");
+            var inbound = GetExternalDeparture("Inbound", responseObject["Services"]);
+            var outbound = GetExternalDeparture("Outbound", responseObject["Services"]);
+
+            var responseString = string.Format(departureFormat, stop, inbound.Destination, inbound.Minutes, inbound.Seconds);
+            responseString += string.Format(departureFormat, stop, outbound.Destination, outbound.Minutes, outbound.Seconds);
+
+            return responseString;
+        }
+
+        private static Departure GetExternalDeparture(string direction, IEnumerable<JToken> services)
+        {
+            foreach (var service in services)
+            {
+                if (service.Value<string>("Direction") != direction || service.Value<string>("ServiceID") == "WRL")
+                {
+                    continue;
+                }
+
+                return new Departure
+                {
+                    Direction = direction,
+                    Destination = service.Value<string>("DestinationStopName"),
+                    Minutes = service.Value<int>("DisplayDepartureSeconds") / 60,
+                    Seconds = service.Value<int>("DisplayDepartureSeconds") % 60
+                };
+            }
+
+            return null;
+        }
+    }
+
+    public class Departure
+    {
+        public string Direction { get; set; }
+        public string Destination { get; set; }
+        public int Minutes { get; set; }
+        public int Seconds { get; set; }
     }
 }
