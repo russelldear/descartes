@@ -43,16 +43,23 @@ namespace Descartes
 
                         var responseText = new StringBuilder(string.Format("Next five buses from {0}: \n\r", stop));
 
-                        for (var i = 0; i < 5; i++)
+                        var i = 0;
+
+                        foreach(var service in responseObject["Services"])
                         {
-                            var service = responseObject["Services"][0];
+                            if (i >= 5)
+                            {
+                                break;
+                            }
 
                             destination = service.Value<string>("DestinationStopName");
                             route =  service.Value<string>("ServiceID");
                             minutes = service.Value<int>("DisplayDepartureSeconds") / 60;
                             seconds = service.Value<int>("DisplayDepartureSeconds") % 60;
 
-                            responseText.Append(string.Format("Route {0} to {1}: {2} mins {3} seconds\n\r"));
+                            responseText.Append(string.Format("Route {0} to {1}: {2} mins {3} seconds\n\r", route, destination, minutes, seconds));
+
+                            i++;
                         }
 
                         return responseText.ToString();
