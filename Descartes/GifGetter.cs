@@ -32,7 +32,7 @@ namespace Descartes
                         Console.WriteLine(responseString);
 
                         dynamic responseObject = JObject.Parse(responseString);
-                        return responseObject.data.url;
+                        return responseObject.data.image_url;
                     }
                 }
                 catch (Exception ex)
