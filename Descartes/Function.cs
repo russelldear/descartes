@@ -2,6 +2,7 @@ using Amazon.Lambda.Core;
 using Newtonsoft.Json;
 using System;
 using Descartes.DataContracts;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -70,6 +71,10 @@ namespace Descartes
                 else if (messageText.ToLower().StartsWith("weather"))
                 {
                     sendWeatherMessage(senderID, messageText).Wait();
+                }
+                else if (messageText.ToLower().StartsWith("radar"))
+                {
+                    sendRadarMessage(senderID, messageText).Wait();
                 }
                 else if (messageText == "I think")
                 {
@@ -175,6 +180,37 @@ namespace Descartes
             };
 
             MessageSender.Send(message).Wait();
+        }
+
+        private static async Task sendRadarMessage(string recipientId, string messageText)
+        {
+            string filter = messageText.Substring(5).Trim();
+
+            List<string> imageUrls = await RadarGetter.Get(filter);
+
+            foreach (var imageUrl in imageUrls)
+            {
+                var message = new OutboundMessaging
+                {
+                    recipient = new Participant
+                    {
+                        id = recipientId
+                    },
+                    message = new OutboundMessage
+                    {
+                        attachment = new Attachment
+                        {
+                            type = "image",
+                            payload = new Payload
+                            {
+                                url = imageUrl
+                            }
+                        }
+                    }
+                };
+
+                MessageSender.Send(message).Wait();
+            }
         }
 
         private static void sendThereforeMessage(string recipientId, string messageText)
