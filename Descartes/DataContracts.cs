@@ -63,5 +63,17 @@ namespace Descartes.DataContracts
     public class OutboundMessage
     {
         public string text { get; set; }
+        public Attachment attachment { get; set; }
+    }
+
+    public class Attachment
+    {
+        public string type { get; set; }
+        public Payload payload { get; set; }
+    }
+
+    public class Payload
+    {
+        public string url { get; set; }
     }
 }

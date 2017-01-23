@@ -100,7 +100,14 @@ namespace Descartes
                 },
                 message = new OutboundMessage
                 {
-                    text = gifUrl
+                    attachment = new Attachment
+                    {
+                        type = "image",
+                        payload = new Payload
+                        {
+                            url = gifUrl
+                        }
+                    }
                 }
             };
 
