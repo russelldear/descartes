@@ -4,6 +4,7 @@ using System;
 using Descartes.DataContracts;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializerAttribute(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
@@ -188,6 +189,8 @@ namespace Descartes
 
             List<string> imageUrls = await RadarGetter.Get(filter);
 
+            imageUrls = imageUrls.OrderByDescending(u => u).Take(3).OrderBy(u => u).ToList();
+
             foreach (var imageUrl in imageUrls)
             {
                 var message = new OutboundMessaging
@@ -209,6 +212,7 @@ namespace Descartes
                     }
                 };
 
+                Console.WriteLine("Sending message with url: " + imageUrl);
                 MessageSender.Send(message).Wait();
             }
         }
