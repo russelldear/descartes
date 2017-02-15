@@ -15,13 +15,15 @@ namespace Descartes
 
             using (var client = new HttpClient())
             {
-                var url = "http://www.metservice.com/publicData/localForecastWellington";
+                var baseUrl = "http://mobile-apps.metservice.com";
+
+                var url = baseUrl + "/publicData/mobileRainRadar_town_Wellington";
 
                 try
                 {
                     var response = await client.GetAsync(url);
 
-                    Console.WriteLine("MetService request status: " + response.StatusCode);
+                    Console.WriteLine("MetService radar request status: " + response.StatusCode);
 
                     if (response.StatusCode == HttpStatusCode.OK && response.Content != null)
                     {
@@ -30,43 +32,11 @@ namespace Descartes
 
                         JObject responseObject = JObject.Parse(responseString);
 
-                        var i = 0;
-                        JToken today = null;
-                        JToken tomorrow = null;
-
-                        foreach (var day in responseObject["days"])
+                        foreach (var imageItem in responseObject["imageList"])
                         {
-                            switch(i)
-                            {
-                                case 0:
-                                    today = day;
-                                    break;
-                                case 1:
-                                    tomorrow = day;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            i++;
+                            var relativePath = imageItem.Value<string>("url");
+                            result.Add(baseUrl + relativePath);
                         }
-
-                        var todayForecast = today.Value<string>("forecast");
-                        var todayMax = today.Value<string>("max");
-                        var todayMin = today.Value<string>("min");
-
-                        var tomorrowForecast = tomorrow.Value<string>("forecast");
-                        var tomorrowMax = tomorrow.Value<string>("max");
-                        var tomorrowMin = tomorrow.Value<string>("min");
-                        
-                        result.Add(string.Format("Today: {0} Max {1}°C - Min {2}°C. \r\nTomorrow: {3} Max {4}°C - Min {5}°C.", 
-                                                todayForecast, todayMax, todayMin,
-                                                tomorrowForecast, tomorrowMax, tomorrowMin));
-                    }
-                    else
-                    {
-                        var errorResponse = "Four seasons in one day, as usual.";
-                        result.Add(errorResponse);
                     }
                 }
                 catch (Exception ex)
@@ -74,8 +44,6 @@ namespace Descartes
                     Console.WriteLine("MetService request failed: " + ex.Message);
                 }
             }
-
-            result.Add(string.Empty);
 
             return result;
         }
