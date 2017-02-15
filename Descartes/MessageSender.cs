@@ -1,4 +1,3 @@
-using Amazon.Lambda.Core;
 using Newtonsoft.Json;
 using System;
 using Descartes.DataContracts;
