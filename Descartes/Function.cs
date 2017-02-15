@@ -187,7 +187,7 @@ namespace Descartes
         {
             string filter = messageText.Substring(5).Trim();
 
-            List<string> imageUrls = null;// = await RadarGetter.Get(filter);
+            List<string> imageUrls = await RadarGetter.Get(filter);
 
             imageUrls = imageUrls.OrderByDescending(u => u).Take(3).OrderBy(u => u).ToList();
 

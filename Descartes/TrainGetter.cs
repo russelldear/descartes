@@ -73,17 +73,30 @@ namespace Descartes
             return String.Format("{0}{1}", url, encodedString);
         }
 
+        private static Dictionary<string, string> GetDestinations()
+        {
+            return new Dictionary<string, string>()
+            {
+                {"UPPE", "Upper Hutt"},
+                {"TAIT2", "Taita"},
+                {"WAIK", "Waikanae"},
+                {"PORI2", "Porirua"},
+                {"JOHN", "Johnsonville"},
+                {"MELL", "Melling"}
+            };
+        }
+
         private static string GetWellingtonResponse(JObject responseObject)
         {
             var stop = responseObject["Stop"].Value<string>("Name");
 
-            var destinations = new List<string>{ "UPPE", "TAIT2", "WAIK", "PORI2", "JOHN", "MELL" };
-
             var responseString = string.Empty;
 
-            foreach(var destination in destinations)
+            var destinations = GetDestinations();
+
+            foreach(var key in destinations.Keys)
             {
-                var departure = GetWellingtonDeparture(destination, responseObject["Services"]);
+                var departure = GetWellingtonDeparture(key, destinations[key], responseObject["Services"]);
 
                 if (departure != null)
                 {
@@ -91,18 +104,18 @@ namespace Descartes
                 }
                 else
                 {
-                    responseString += string.Format("No {0} departures listed.\n", destination);
+                    responseString += string.Format("No {0} departures listed.\n", destinations[key]);
                 }
             }
 
             return responseString;
         }
 
-        private static Departure GetWellingtonDeparture(string destination, IEnumerable<JToken> services)
+        private static Departure GetWellingtonDeparture(string destinationKey, string destinationName, IEnumerable<JToken> services)
         {
             foreach (var service in services)
             {
-                if (service.Value<string>("DestinationStopID") != destination)
+                if (service.Value<string>("DestinationStopID") != destinationKey)
                 {
                     continue;
                 }
@@ -110,7 +123,7 @@ namespace Descartes
                 return new Departure
                 {
                     Direction = "Outbound",
-                    Destination = service.Value<string>("DestinationStopName"),
+                    Destination = destinationName,
                     Minutes = service.Value<int>("DisplayDepartureSeconds") / 60,
                     Seconds = service.Value<int>("DisplayDepartureSeconds") % 60
                 };
