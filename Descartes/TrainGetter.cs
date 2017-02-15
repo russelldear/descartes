@@ -77,13 +77,13 @@ namespace Descartes
         {
             var stop = responseObject["Stop"].Value<string>("Name");
 
-            var lines = new List<string>{ "HVL", "KPL", "JVL", "MEL" };
+            var destinations = new List<string>{ "UPPE", "TAIT2", "WAIK", "PORI2", "JOHN", "MELL" };
 
             var responseString = string.Empty;
 
-            foreach(var line in lines)
+            foreach(var destination in destinations)
             {
-                var departure = GetWellingtonDeparture(line, responseObject["Services"]);
+                var departure = GetWellingtonDeparture(destination, responseObject["Services"]);
 
                 if (departure != null)
                 {
@@ -91,18 +91,18 @@ namespace Descartes
                 }
                 else
                 {
-                    responseString += string.Format("No {0} departures listed.\n", line);
+                    responseString += string.Format("No {0} departures listed.\n", destination);
                 }
             }
 
             return responseString;
         }
 
-        private static Departure GetWellingtonDeparture(string line, IEnumerable<JToken> services)
+        private static Departure GetWellingtonDeparture(string destination, IEnumerable<JToken> services)
         {
             foreach (var service in services)
             {
-                if (service.Value<string>("ServiceID") != line)
+                if (service.Value<string>("DestinationStopID") != destination)
                 {
                     continue;
                 }
